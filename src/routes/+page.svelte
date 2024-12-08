@@ -1,59 +1,37 @@
-<script lang="ts">
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcomeFallback from '$lib/images/svelte-welcome.png';
+<script>
+	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
+	import { DarkMode, Card, Label, Input, Button } from 'flowbite-svelte';
 </script>
 
-<svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
-</svelte:head>
+<Navbar>
+	<NavBrand href="/">
+		<img src="/images/flowbite-svelte-icon-logo.svg" class="me-3 h-6 sm:h-9" alt="Flowbite Logo" />
+		<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">Flowbite</span
+		>
+	</NavBrand>
+	<NavHamburger />
+	<NavUl>
+		<NavLi href="/">Home</NavLi>
+		<NavLi href="#input">Input</NavLi>
+	</NavUl>
+	<DarkMode />
+</Navbar>
 
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcomeFallback} alt="Welcome" />
-			</picture>
-		</span>
-
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
-</section>
-
-<style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
-</style>
+<div class="flex justify-center pt-20">
+	<Card id="input" size="lg">
+		<h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Input Letters contained in Word</h2>
+		<div class="mb-6">
+			<Label for="large-input" class="block mb-2">Large input</Label>
+			<Input id="large-input" size="lg" placeholder="Large input" />
+		  </div>
+		  <div class="mb-6">
+			<Label for="default-input" class="block mb-2">Default input</Label>
+			<Input id="default-input" placeholder="Default input" />
+		  </div>
+		  <div class="mb-6">
+			<Label for="small-input" class="block mb-2">Small input</Label>
+			<Input id="small-input" size="sm" placeholder="Small input" />
+		  </div>
+		  <Button>Default</Button>
+	</Card>
+</div>
