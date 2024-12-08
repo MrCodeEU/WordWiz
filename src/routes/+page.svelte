@@ -1,14 +1,13 @@
 <script>
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
 	import { DarkMode, Card, Label, Input, Button } from 'flowbite-svelte';
+	import logo from '$lib/images/Logo-h.png';
 	import * as m from '$lib/paraglide/messages.js'
 </script>
 
 <Navbar>
 	<NavBrand href="/">
-		<img src="/images/flowbite-svelte-icon-logo.svg" class="me-3 h-6 sm:h-9" alt="Flowbite Logo" />
-		<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">Flowbite</span
-		>
+		<img src={logo} class="me-3 h-6 sm:h-9" alt="Flowbite Logo" />
 	</NavBrand>
 	<NavHamburger />
 	<NavUl>
