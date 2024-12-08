@@ -71,7 +71,7 @@ jobs:
             echo "Starting new container..."
             docker run -d \
               --name ${{ env.REPO_NAME_LC }} \
-              -p 3000:3000 \
+              -p 3001:3000 \
               --restart unless-stopped \
               ghcr.io/${{ env.OWNER_LC  }}/${{ env.REPO_NAME_LC }}:latest
             
