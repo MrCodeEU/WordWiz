@@ -19,7 +19,7 @@
 
 <div class="flex justify-center pt-20">
 	<Card id="input" size="lg">
-		<h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Input Letters contained in Word</h2>
+		<h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{m}</h2>
 		<div class="mb-6">
 			<Label for="large-input" class="block mb-2">Large input</Label>
 			<Input id="large-input" size="lg" placeholder="Large input" />
