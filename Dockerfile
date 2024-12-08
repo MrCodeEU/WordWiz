@@ -1,10 +1,15 @@
 FROM node:20-alpine
 
-# Install yarn and bun
-RUN apk add --no-cache curl
-RUN curl -fsSL https://bun.sh/install | bash
+# Install required packages
+RUN apk add --no-cache curl bash
+
+# Install bun and yarn
+RUN curl -fsSL https://bun.sh/install | bash && \
+    corepack enable && \
+    corepack prepare yarn@stable --activate
+
+# Add bun to PATH
 ENV PATH="/root/.bun/bin:${PATH}"
-RUN corepack enable && corepack prepare yarn@stable --activate
 
 WORKDIR /app
 COPY . .
