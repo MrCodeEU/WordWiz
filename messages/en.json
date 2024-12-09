@@ -1,4 +1,6 @@
 {
     "$schema": "https://inlang.com/schema/inlang-message-format",
-    "cardHeader": "Input Letters contained in Word"
+    "cardHeader": "Input Letters contained in Word",
+    "search": "Known Letters",
+    "searchTooltip": "Enter the letters that are contained in the word. If letters exist multiple times, enter them multiple times."
 }
