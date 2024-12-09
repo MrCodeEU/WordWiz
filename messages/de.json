@@ -1,5 +1,6 @@
 {
     "$schema": "https://inlang.com/schema/inlang-message-format",
     "cardHeader": "Buchstaben die im Wort enthalten sind eingeben",
-    "search": "Suche"
+    "search": "Bekannte Buchstaben",
+    "searchTooltip": "Geben Sie die Buchstaben ein, die im Wort enthalten sind. Wenn Buchstaben mehrfach vorkommen, geben Sie sie mehrmals ein."
 }

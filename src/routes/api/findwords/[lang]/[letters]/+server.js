@@ -29,7 +29,7 @@ export async function GET({ params }) {
         //console.log('matchingWords:', matchingWords);
 
         // ffilter that contain the letters the wrong amount of times
-        matchingWords = matchingWords.filter(word => {
+        matchingWords = matchingWords.filter((/** @type {any} */ word) => {
             const wordLetterCount = new Map();
             for (const letter of word) {
                 wordLetterCount.set(letter, (wordLetterCount.get(letter) || 0) + 1);
@@ -45,7 +45,9 @@ export async function GET({ params }) {
             return true;
         });
 
-        return json({ words: matchingWords });
+        console.log('matchingWords:', matchingWords);
+
+        return json({ words: matchingWords || [] });
     } catch (error) {
         console.error('Error finding words:', error);
         return new Response('Internal server error', { status: 500 });
