@@ -51,13 +51,13 @@ jobs:
             ghcr.io/${{ env.OWNER_LC  }}/${{ env.REPO_NAME_LC }}:${{ github.sha }}
       
       - name: Deploy to server
-        uses: appleboy/ssh-action@master
+        uses: Comori/ssh@v0.0.1
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT }}
-          script: |
+          command: |
             # Pull the new image
             echo "Pulling new image..."
             docker pull ghcr.io/${{ env.OWNER_LC  }}/${{ env.REPO_NAME_LC }}:latest
