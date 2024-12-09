@@ -6,8 +6,10 @@
 	import { Spinner } from 'flowbite-svelte';
 	import { Toast } from 'flowbite-svelte';
 	import { blur } from 'svelte/transition';
+	import langToggle from '$lib/lang-toggle.svelte';
 	import logo from '$lib/images/Logo-h.png';
 	import * as m from '$lib/paraglide/messages.js';
+	import LangToggle from '$lib/lang-toggle.svelte';
 
 	let letters = $state('');
 	let toastMessage = $state('');
@@ -94,6 +96,7 @@
 		<NavLi href="#input">Input</NavLi>
 	</NavUl>
 	<DarkMode />
+	<LangToggle />
 </Navbar>
 
 <Toast transition={blur} params={{ amount: 10 }} position="top-right" bind:toastStatus class="mr-5 mt-16" dismissable={false}>
