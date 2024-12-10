@@ -28,7 +28,7 @@ export async function GET({ params }) {
         //console.log('letterCount:', letterCount);
         //console.log('matchingWords:', matchingWords);
 
-        // ffilter that contain the letters the wrong amount of times
+        // filter that contain the letters the wrong amount of times
         matchingWords = matchingWords.filter((/** @type {any} */ word) => {
             const wordLetterCount = new Map();
             for (const letter of word) {
@@ -38,6 +38,17 @@ export async function GET({ params }) {
             for (const [letter, count] of letterCount) {
                 if (wordLetterCount.get(letter) !== count) {
                     //console.log(`Word ${word} does not contain ${letter} the right amount of times`);
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        // filter out words that contain letters not in the input
+        matchingWords = matchingWords.filter((/** @type {any} */ word) => {
+            for (const letter of word) {
+                if (!letterCount.has(letter)) {
                     return false;
                 }
             }
