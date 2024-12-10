@@ -1,6 +1,6 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const { Trie } = require('word-graphs');
+const { MinimalWordGraph } = require('word-graphs');
 import { promises as fs } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -35,8 +35,8 @@ export async function initializeTries() {
             getWordFilePath('english'),
             'utf-8'
         );
-        const enTrie = new Trie();
-        const enList = enWords.split('\n').map(word => word.trim().toLowerCase());
+        const enTrie = new MinimalWordGraph();
+        const enList = enWords.split('\n').map(word => word.trim());
         enWords.split('\n').forEach(word => enTrie.add(word.trim()));
         tries.set('en', enTrie);
         lists.set('en', enList);
@@ -47,8 +47,8 @@ export async function initializeTries() {
             getWordFilePath('german'),
             'utf-8'
         );
-        const deTrie = new Trie();
-        const deList = deWords.split('\n').map(word => word.trim().toLowerCase());
+        const deTrie = new MinimalWordGraph();
+        const deList = deWords.split('\n').map(word => word.trim());
         deWords.split('\n').forEach(word => deTrie.add(word.trim()));
         tries.set('de', deTrie);
         lists.set('de', deList);
@@ -63,7 +63,7 @@ export async function initializeTries() {
 
 /**
  * @param {String} lang
- * @returns {Trie}
+ * @returns {MinimalWordGraph}
  */
 export function getTrie(lang) {
     const trie = tries.get(lang);
