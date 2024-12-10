@@ -87,6 +87,46 @@
 		);
 	}
 
+
+	async function unscramble() {
+		// check if no letters are entered
+		if (letters.length === 0) {
+			trigger('Please enter some letters');
+			return;
+		}
+		loading = true;
+
+		//check that letters are single chars separated by commas
+		const regex = /^[a-zA-Z](,[a-zA-Z])*$/;
+		if (!regex.test(letters)) {
+			alert('Please enter a comma separated list of letters');
+			return;
+		}
+
+		const encodedLetters = encodeURIComponent(letters);
+
+		try {
+			const response = await fetch(`/api/findwords/${selectedLang}/${encodedLetters}/unscramble`);
+			if (!response.ok) throw new Error('Failed to fetch words');
+			const data = await response.json();
+			results = data.words;
+		} catch (error) {
+			console.error('Error:', error);
+			results = [];
+		}
+		loading = false;
+		initialLoad = true;
+		// map results wordlength -> words with that length
+		const wordLengths = results.map((word) => word.length);
+		const wordLengthsSet = new Set(wordLengths);
+		const wordLengthsArray = Array.from(wordLengthsSet);
+		wordLengthsMap = new Map(
+			wordLengthsArray
+				.sort((a, b) => a - b)
+				.map((length) => [length, results.filter((word) => word.length === length)])
+		);
+	}
+
 	async function getMaxWordLength() {
 		try {
 			const response = await fetch(`/api/findwords/${selectedLang}/maxLength`);
@@ -149,10 +189,10 @@
 </Toast>
 
 <div class="w-1/2 ml-auto mr-auto pt-20">
-	<Tabs>
-		<TabItem open>
+	<Tabs divider={false} contentClass="mt-0">
+		<TabItem open class="bg-stone-700 rounded-md">
 			<span slot="title">Known Letters</span>
-			<Card id="input" size="lg">
+			<Card id="input" size="lg" class="rounded-t-none">
 				<h2 class="m-auto mb-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
 					{m.cardHeader()}
 				</h2>
@@ -186,13 +226,26 @@
 				</div>
 			</Card>
 		</TabItem>
-		<TabItem>
+		<TabItem  class="bg-stone-700 rounded-md">
 			<span slot="title">Unscramble</span>
-			<p class="text-sm text-gray-500 dark:text-gray-400">
-				<b>Settings:</b>
-				Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-				labore et dolore magna aliqua.
-			</p>
+			<Card id="input" size="lg" class="rounded-t-none">
+				<h2 class="m-auto mb-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+					{m.cardHeader()}
+				</h2>
+				<Label for="large-input" class="mb-2 block">Title todo</Label>
+				<Input
+					id="default-input"
+					size="lg"
+					placeholder="b,n,h,g"
+					type="text"
+					bind:value={letters}
+					oninput={addCommas}
+					class="mb-5"
+				/>
+				<div class="flex w-full flex-row justify-between">
+					<Button onclick={unscramble} class="w-1/3">Find Words</Button>
+				</div>
+			</Card>
 		</TabItem>
 	</Tabs>
 </div>
