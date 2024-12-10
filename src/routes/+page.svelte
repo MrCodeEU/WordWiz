@@ -40,13 +40,24 @@
 		}
 	});
 
-	let showNoWordsMessage = $derived(initialLoad && results.length === 0);
+	function debounce(func: Function, wait: number) {
+		let timeout: NodeJS.Timeout;
+		return (...args: any[]) => {
+			clearTimeout(timeout);
+			timeout = setTimeout(() => func(...args), wait);
+		};
+	}
 
-	$effect(() => {
-		if (showNoWordsMessage) {
-			trigger('No words found');
-		}
-	});
+	const debouncedTrigger = debounce((message: string) => {
+		toastMessage = message;
+		toastStatus = true;
+		toastCounter = 6;
+		timeout();
+	}, 300);
+
+	function trigger(message: string) {
+		debouncedTrigger(message);
+	}
 
 	async function findWords() {
 		// check if no letters are entered
@@ -70,9 +81,13 @@
 			if (!response.ok) throw new Error('Failed to fetch words');
 			const data = await response.json();
 			results = data.words;
+			if (results.length === 0) {
+				trigger('No words found');
+			}
 		} catch (error) {
 			console.error('Error:', error);
 			results = [];
+			trigger('Error finding words');
 		}
 		loading = false;
 		initialLoad = true;
@@ -110,9 +125,13 @@
 			if (!response.ok) throw new Error('Failed to fetch words');
 			const data = await response.json();
 			results = data.words;
+			if (results.length === 0) {
+				trigger('No words found');
+			}
 		} catch (error) {
 			console.error('Error:', error);
 			results = [];
+			trigger('Error finding words');
 		}
 		loading = false;
 		initialLoad = true;
@@ -147,12 +166,6 @@
 			.join(',');
 	}
 
-	function trigger(message: string) {
-		toastMessage = message ?? '';
-		toastStatus = true;
-		toastCounter = 6;
-		timeout();
-	}
 
 	function timeout() {
 		if (--toastCounter > 0) return setTimeout(timeout, 1000);
@@ -251,34 +264,34 @@
 </div>
 
 <div class="width-screen flex flex-col justify-center pt-10">
-	<div class="card w1/2">
-		{#if loading}
-			<div class="flex w-screen justify-center">
-				<div class="flex h-96 w-1/2 justify-center pt-24">
-					<Spinner size="20" />
-				</div>
-			</div>
-		{:else if results.length > 0}
-			<div class="flex w-screen justify-center">
-				<div class="flex w-3/4 flex-wrap pt-16">
-					{#each wordLengthsMap as group}
-						<div class="flex w-full flex-col">
-							<h3 class="pt-5 text-lg font-bold">{group[0]} letter words</h3>
-							<div class="flex flex-row flex-wrap justify-items-center">
-								{#each group[1] as word}
-									<div
-										class="type-scale4 mx-2 my-1 w-min rounded-md bg-orange-400 px-2 py-1 text-center"
-									>
-										{word}
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/each}
-				</div>
-			</div>
-		{:else if showNoWordsMessage}
-			<p>No words found</p>
-		{/if}
-	</div>
+    <div class="flex w-screen justify-center">
+        <div class="flex w-3/4 flex-wrap pt-16">
+            {#if loading}
+                <div class="flex w-full justify-center">
+                    <div class="flex h-96 justify-center pt-24">
+                        <Spinner size="20" />
+                    </div>
+                </div>
+            {:else if initialLoad}
+                {#if wordLengthsMap.size > 0}
+                    {#each [...wordLengthsMap] as [length, words]}
+                        <div class="flex w-full flex-col">
+                            <h3 class="pt-5 text-lg font-bold">{length} letter words</h3>
+                            <div class="flex flex-row flex-wrap justify-items-center">
+                                {#each words as word}
+                                    <div class="type-scale4 mx-2 my-1 w-min rounded-md bg-orange-400 px-2 py-1 text-center">
+                                        {word}
+                                    </div>
+                                {/each}
+                            </div>
+                        </div>
+                    {/each}
+                {:else}
+                    <div class="flex w-full justify-center pt-5">
+                        <p class="text-lg">No words found</p>
+                    </div>
+                {/if}
+            {/if}
+        </div>
+    </div>
 </div>

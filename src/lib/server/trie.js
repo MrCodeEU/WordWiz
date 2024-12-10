@@ -12,7 +12,7 @@ const __dirname = dirname(__filename);
 // Initialize tries for different languages
 const tries = new Map();
 const lists = new Map();
-const short = true;
+const short = false;
 const maxWordLengths = new Map();
 
 export async function initializeTries() {
@@ -36,7 +36,7 @@ export async function initializeTries() {
             'utf-8'
         );
         const enTrie = new Trie();
-        const enList = enWords.split('\n').map(word => word.trim());
+        const enList = enWords.split('\n').map(word => word.trim().toLowerCase());
         enWords.split('\n').forEach(word => enTrie.add(word.trim()));
         tries.set('en', enTrie);
         lists.set('en', enList);
@@ -48,7 +48,7 @@ export async function initializeTries() {
             'utf-8'
         );
         const deTrie = new Trie();
-        const deList = deWords.split('\n').map(word => word.trim());
+        const deList = deWords.split('\n').map(word => word.trim().toLowerCase());
         deWords.split('\n').forEach(word => deTrie.add(word.trim()));
         tries.set('de', deTrie);
         lists.set('de', deList);

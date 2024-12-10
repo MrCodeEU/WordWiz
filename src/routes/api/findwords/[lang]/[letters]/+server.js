@@ -9,19 +9,23 @@ export async function GET({ params }) {
     }
     
     try {
+
+        // letters to lowercase
+        const lowerLetters = letters.toLowerCase();
+
         const trie = getTrie(lang);
 
-        console.log(`Finding words for ${lang} with letters ${letters}`);
+        console.log(`Finding words for ${lang} with letters ${lowerLetters}`);
         
         //const matchingWords = trie.containsAll(letters.split(','));
         
         // wind all words containing the letters (in any order)
         // (also if a letter is used multiple times the word must contain it the same amount of times)
-        let matchingWords = trie.containsAll(letters.split(','));
+        let matchingWords = trie.containsAll(lowerLetters.split(','));
 
         // map of letter -> count
         const letterCount = new Map();
-        for (const letter of letters.split(',')) {
+        for (const letter of lowerLetters.split(',')) {
             letterCount.set(letter, (letterCount.get(letter) || 0) + 1);
         }
 
