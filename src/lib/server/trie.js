@@ -11,7 +11,9 @@ const __dirname = dirname(__filename);
 
 // Initialize tries for different languages
 const tries = new Map();
+const lists = new Map();
 const short = true;
+const maxWordLengths = new Map();
 
 export async function initializeTries() {
     try {
@@ -34,8 +36,11 @@ export async function initializeTries() {
             'utf-8'
         );
         const enTrie = new Trie();
+        const enList = enWords.split('\n').map(word => word.trim());
         enWords.split('\n').forEach(word => enTrie.add(word.trim()));
         tries.set('en', enTrie);
+        lists.set('en', enList);
+        maxWordLengths.set('en', Math.max(...enList.map(word => word.length)));
 
         // Load German words
         const deWords = await fs.readFile(
@@ -43,8 +48,11 @@ export async function initializeTries() {
             'utf-8'
         );
         const deTrie = new Trie();
+        const deList = deWords.split('\n').map(word => word.trim());
         deWords.split('\n').forEach(word => deTrie.add(word.trim()));
         tries.set('de', deTrie);
+        lists.set('de', deList);
+        maxWordLengths.set('de', Math.max(...deList.map(word => word.length)));
 
         console.log('Tries initialized successfully');
     } catch (error) {
@@ -55,7 +63,7 @@ export async function initializeTries() {
 
 /**
  * @param {String} lang
- * @returns {pkg.Trie}
+ * @returns {Trie}
  */
 export function getTrie(lang) {
     const trie = tries.get(lang);
@@ -63,4 +71,28 @@ export function getTrie(lang) {
         throw new Error(`Trie for language ${lang} not found`);
     }
     return trie;
+}
+
+/**
+ * @param {String} lang
+ * @returns {String[]}
+ */
+export function getList(lang) {
+    const list = lists.get(lang);
+    if (!list) {
+        throw new Error(`List for language ${lang} not found`);
+    }
+    return list;
+}
+
+/**
+ * @param {String} lang
+ * @returns {Number}
+ */
+export function getMaxLength(lang) {
+    const maxLength = maxWordLengths.get(lang);
+    if (!maxLength) {
+        throw new Error(`Max word length for language ${lang} not found`);
+    }
+    return maxLength;
 }

@@ -1,14 +1,17 @@
-<script>
-	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
+<script lang="ts">
+	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Group, Badge } from 'flowbite-svelte';
 	import { DarkMode, Card, Label, Input, Button } from 'flowbite-svelte';
 	import { RadioButton, ButtonGroup } from 'flowbite-svelte';
 	import { FlagOutline, InfoCircleOutline } from 'flowbite-svelte-icons';
 	import { Spinner } from 'flowbite-svelte';
 	import { Toast } from 'flowbite-svelte';
 	import { blur } from 'svelte/transition';
-	import langToggle from '$lib/lang-toggle.svelte';
+	import { onMount } from 'svelte';
+	import { i18n } from '$lib/i18n';
+	import { page } from '$app/stores';
 	import logo from '$lib/images/Logo-h.png';
 	import * as m from '$lib/paraglide/messages.js';
+	import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
 	import LangToggle from '$lib/lang-toggle.svelte';
 
 	let letters = $state('');
@@ -19,10 +22,22 @@
 	/**
 	 * @type {string[]}
 	 */
-	let results = $state([]);
+	let results = $state<string[]>([]);
 	let loading = $state(false);
 	let initialLoad = $state(false);
-	let selectedLang = $state('de');
+	let selectedLang: AvailableLanguageTag = $state('de');
+	let maxLength = $state(Promise.resolve(0));
+	let wordLengthsMap = $state<Map<number, string[]>>(new Map());
+	onMount(() => {
+		maxLength = getMaxWordLength();
+		selectedLang = i18n.getLanguageFromUrl($page.url);
+	});
+
+	$effect(() => {
+		if (i18n.getLanguageFromUrl($page.url)) {
+			maxLength = getMaxWordLength();
+		}
+	});
 
 	let showNoWordsMessage = $derived(initialLoad && results.length === 0);
 
@@ -60,6 +75,26 @@
 		}
 		loading = false;
 		initialLoad = true;
+		// map results wordlength -> words with that length
+		const wordLengths = results.map((word) => word.length);
+		const wordLengthsSet = new Set(wordLengths);
+		const wordLengthsArray = Array.from(wordLengthsSet);
+		wordLengthsMap = new Map(
+			wordLengthsArray.sort((a, b) => a - b)
+				.map((length) => [length, results.filter((word) => word.length === length)])
+		);
+	}
+
+	async function getMaxWordLength() {
+		try {
+			const response = await fetch(`/api/findwords/${selectedLang}/maxLength`);
+			if (!response.ok) throw new Error('Failed to fetch max word length');
+			const data = await response.json();
+			return data.maxWordLength;
+		} catch (error) {
+			console.error('Error:', error);
+			return 0;
+		}
 	}
 
 	function addCommas() {
@@ -70,10 +105,7 @@
 			.join(',');
 	}
 
-	/**
-	 * @param {string} [message]
-	 */
-	function trigger(message) {
+	function trigger(message: string) {
 		toastMessage = message ?? '';
 		toastStatus = true;
 		toastCounter = 6;
@@ -124,6 +156,14 @@
 		/>
 		<div class="flex w-full flex-row justify-between">
 			<Button onclick={findWords} class="w-1/3">Find Words</Button>
+			{#await maxLength}
+				<Spinner size="10" />
+			{:then maxLength}
+				<p class="text-gray-500 dark:text-gray-400">Max word length: {maxLength}</p>
+			{:catch error}
+				<p class="text-red-500 dark:text-red-400">Error: {error.message}</p>
+				
+			{/await}
 			<ButtonGroup>
 				<RadioButton value="de" bind:group={selectedLang}
 					><FlagOutline class="h-7 w-7" />Deutsch</RadioButton
@@ -147,11 +187,16 @@
 		{:else if results.length > 0}
 			<div class="flex w-screen justify-center">
 				<div class="flex w-3/4 flex-wrap pt-16">
-					{#each results as word}
-						<div
-							class="m-2 rounded-xl border-2 border-cyan-400 border-opacity-50 bg-orange-500 bg-opacity-30 px-2 py-1 backdrop-blur-sm"
-						>
-							{word}
+					{#each wordLengthsMap as group}
+						<div class="flex flex-col w-full">
+							<h3 class="text-lg font-bold pt-5">{group[0]} letter words</h3>
+							<div class="flex flex-row flex-wrap justify-items-center">
+								{#each group[1] as word}
+								<div class="px-2 py-1 mx-2 my-1 type-scale4 rounded-md bg-orange-400 text-center w-min">
+									{word}
+								</div>
+							{/each}
+							</div>
 						</div>
 					{/each}
 				</div>

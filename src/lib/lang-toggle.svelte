@@ -20,7 +20,6 @@
 	}
 
     let checked = $derived(lang === 'de')
-
 </script>
 
 <div class="flex flex-row justify-center items-center gap-4">
