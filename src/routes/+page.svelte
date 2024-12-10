@@ -189,7 +189,7 @@
 </Toast>
 
 <div class="w-1/2 ml-auto mr-auto pt-20">
-	<Tabs divider={false} contentClass="mt-0">
+	<Tabs divider={false} contentClass="mt-0" defaultClass="flex flex-wrap space-x-0 rtl:space-x-reverse">
 		<TabItem open class="bg-stone-700 rounded-md">
 			<span slot="title">Known Letters</span>
 			<Card id="input" size="lg" class="rounded-t-none">
