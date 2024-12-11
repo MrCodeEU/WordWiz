@@ -279,7 +279,7 @@
                             <h3 class="pt-5 text-lg font-bold">{length} letter words</h3>
                             <div class="flex flex-row flex-wrap justify-items-center">
                                 {#each words as word}
-                                    <div class="type-scale4 mx-2 my-1 w-min rounded-md bg-orange-400 px-2 py-1 text-center">
+                                    <div class="type-scale4 mx-2 my-1 w-min rounded-md bg-orange-400 px-2 py-1 text-center text-nowrap">
                                         {word}
                                     </div>
                                 {/each}
