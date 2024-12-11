@@ -50,17 +50,15 @@ jobs:
             ghcr.io/${{ env.OWNER_LC }}/${{ env.REPO_NAME_LC }}:latest
             ghcr.io/${{ env.OWNER_LC  }}/${{ env.REPO_NAME_LC }}:${{ github.sha }}
       
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
       - name: Deploy to server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT }}
-          script: |
+        run: |
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} -p ${{ secrets.SERVER_PORT }} '
             # Pull the new image
             echo "Pulling new image..."
-            docker pull ghcr.io/${{ env.OWNER_LC  }}/${{ env.REPO_NAME_LC }}:latest
+            docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.REPO_NAME_LC }}:latest
             
             # Stop and remove the existing container
             echo "Removing existing container..."
@@ -71,9 +69,9 @@ jobs:
             echo "Starting new container..."
             docker run -d \
               --name ${{ env.REPO_NAME_LC }} \
-              -p 3000:3000 \
+              -p 3001:3000 \
               --restart unless-stopped \
-              ghcr.io/${{ env.OWNER_LC  }}/${{ env.REPO_NAME_LC }}:latest
+              ghcr.io/${{ env.OWNER_LC }}/${{ env.REPO_NAME_LC }}:latest
             
             # Clean up old images
             echo "Cleaning up old images..."
@@ -82,3 +80,4 @@ jobs:
             # Print deployment info
             echo "Deployment completed at $(date)"
             echo "Container ID: $(docker ps -q -f name=${{ env.REPO_NAME_LC }})"
+          '
