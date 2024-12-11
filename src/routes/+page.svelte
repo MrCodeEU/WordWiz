@@ -4,7 +4,7 @@
 	import { RadioButton, ButtonGroup } from 'flowbite-svelte';
 	import { FlagOutline, InfoCircleOutline } from 'flowbite-svelte-icons';
 	import { Spinner } from 'flowbite-svelte';
-	import { Toast } from 'flowbite-svelte';
+	import toast, { Toaster } from 'svelte-french-toast';
 	import { blur } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { i18n } from '$lib/i18n';
@@ -16,9 +16,6 @@
 	import LangToggle from '$lib/lang-toggle.svelte';
 
 	let letters = $state('');
-	let toastMessage = $state('');
-	let toastStatus = $state(false);
-	let toastCounter = $state(0);
 
 	/**
 	 * @type {string[]}
@@ -40,29 +37,13 @@
 		}
 	});
 
-	function debounce(func: Function, wait: number) {
-		let timeout: NodeJS.Timeout;
-		return (...args: any[]) => {
-			clearTimeout(timeout);
-			timeout = setTimeout(() => func(...args), wait);
-		};
-	}
-
-	const debouncedTrigger = debounce((message: string) => {
-		toastMessage = message;
-		toastStatus = true;
-		toastCounter = 6;
-		timeout();
-	}, 300);
-
-	function trigger(message: string) {
-		debouncedTrigger(message);
-	}
-
 	async function findWords() {
 		// check if no letters are entered
 		if (letters.length === 0) {
-			trigger('Please enter some letters');
+			toast.error('Please enter some letters', {
+				position: 'top-right',
+				duration: 3000,
+			});
 			return;
 		}
 		loading = true;
@@ -70,7 +51,10 @@
 		//check that letters are single chars separated by commas
 		const regex = /^[a-zA-Z](,[a-zA-Z])*$/;
 		if (!regex.test(letters)) {
-			alert('Please enter a comma separated list of letters');
+			toast.error('Please enter a comma separated list of letters', {
+				position: 'top-right',
+				duration: 3000,
+			});
 			return;
 		}
 
@@ -82,15 +66,27 @@
 			const data = await response.json();
 			results = data.words;
 			if (results.length === 0) {
-				trigger('No words found');
+				toast.error('No words found', {
+				position: 'top-right',
+				duration: 3000,
+			});
 			}
 		} catch (error) {
 			console.error('Error:', error);
 			results = [];
-			trigger('Error finding words');
+			toast.error('Error finding words: ' + error, {
+				position: 'top-right',
+				duration: 3000,
+			});
 		}
 		loading = false;
 		initialLoad = true;
+		if (results.length !== 0) {
+			toast.success('Words found', {
+				position: 'top-right',
+				duration: 3000,
+			});
+		}
 		// map results wordlength -> words with that length
 		const wordLengths = results.map((word) => word.length);
 		const wordLengthsSet = new Set(wordLengths);
@@ -106,7 +102,10 @@
 	async function unscramble() {
 		// check if no letters are entered
 		if (letters.length === 0) {
-			trigger('Please enter some letters');
+			toast.error('Please enter some letters', {
+				position: 'top-right',
+				duration: 3000,
+			});
 			return;
 		}
 		loading = true;
@@ -126,15 +125,27 @@
 			const data = await response.json();
 			results = data.words;
 			if (results.length === 0) {
-				trigger('No words found');
+				toast.error('No words found', {
+				position: 'top-right',
+				duration: 3000,
+			});
 			}
 		} catch (error) {
 			console.error('Error:', error);
 			results = [];
-			trigger('Error finding words');
+			toast.error('Error finding words: ' + error, {
+				position: 'top-right',
+				duration: 3000,
+			});
 		}
 		loading = false;
 		initialLoad = true;
+		if (results.length !== 0) {
+			toast.success('Words found', {
+				position: 'top-right',
+				duration: 3000,
+			});
+		}
 		// map results wordlength -> words with that length
 		const wordLengths = results.map((word) => word.length);
 		const wordLengthsSet = new Set(wordLengths);
@@ -165,12 +176,6 @@
 			.filter((l) => l !== ',')
 			.join(',');
 	}
-
-
-	function timeout() {
-		if (--toastCounter > 0) return setTimeout(timeout, 1000);
-		toastStatus = false;
-	}
 </script>
 
 <Navbar>
@@ -186,21 +191,7 @@
 	<LangToggle />
 </Navbar>
 
-<Toast
-	transition={blur}
-	params={{ amount: 10 }}
-	position="top-right"
-	bind:toastStatus
-	class="mr-5 mt-16"
-	dismissable={false}
->
-	<InfoCircleOutline
-		slot="icon"
-		class="h-6 w-6 bg-primary-100 text-primary-500 dark:bg-primary-800 dark:text-primary-200"
-	/>
-	{toastMessage}
-</Toast>
-
+<Toaster />
 <div class="w-1/2 ml-auto mr-auto pt-20">
 	<Tabs divider={false} contentClass="mt-0" defaultClass="flex flex-wrap space-x-0 rtl:space-x-reverse">
 		<TabItem open class="bg-stone-700 rounded-md">

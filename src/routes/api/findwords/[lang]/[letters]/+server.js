@@ -21,7 +21,7 @@ export async function GET({ params }) {
         
         // wind all words containing the letters (in any order)
         // (also if a letter is used multiple times the word must contain it the same amount of times)
-        let matchingWords = trie.findWordsWithLetters(lowerLetters.split(','), {exact: true});
+        let matchingWords = trie.findWordsWithLetters(lowerLetters.split(','));
 
         // Convert Set to Array if matchingWords is a Set
         const wordsArray = Array.isArray(matchingWords) ? matchingWords : Array.from(matchingWords);

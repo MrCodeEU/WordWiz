@@ -39,5 +39,8 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint ."
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"svelte-french-toast": "^1.2.0"
+	}
 }

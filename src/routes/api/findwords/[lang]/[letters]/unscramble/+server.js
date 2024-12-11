@@ -12,7 +12,7 @@ export async function GET({ params }) {
         const trie = getLetterMap(lang);
 
         // Convert comma-separated letters to a single string
-        const letterString = letters.toLowerCase().split(',').join('');
+        const letterString = letters.toLowerCase().split(',');
 
         console.log(`Finding words for ${lang} with letters ${letterString}`);
         

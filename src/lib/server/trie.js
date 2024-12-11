@@ -59,46 +59,57 @@ class LetterMap {
     } = {}) {
         const letterFreq = this.createFrequencyMap(letters);
         const candidateWords = new Set();
-
-        // Start with words containing the least frequent letter
-        let minSize = Infinity;
-        let rareChar = '';
-        
-        for (const [char, freq] of letterFreq) {
-            const wordsWithChar = this.letterMap.get(char)?.size ?? Infinity;
-            if (wordsWithChar < minSize) {
-                minSize = wordsWithChar;
-                rareChar = char;
-            }
-        }
-
-        // If no matching letters found, return empty set
-        if (!rareChar) return new Set();
-
-        // Get initial candidates
-        const initialCandidates = this.letterMap.get(rareChar) || new Set();
-
-        // Filter candidates
-        for (const word of initialCandidates) {
-            if (word.length < minLength || word.length > maxLength) continue;
+    
+        // Get words of appropriate lengths
+        const wordLengths = exact ? 
+            [letters.length] : // If exact, only check words of same length
+            Array.from(this.lengthMap.keys()).filter(len => 
+                len >= Math.max(minLength, letters.length) && // Must be at least as long as input
+                len <= maxLength
+            );
+    
+        // Check words of each valid length
+        for (const length of wordLengths) {
+            const wordsOfLength = this.lengthMap.get(length) || new Set();
             
-            const wordFreq = this.wordMap.get(word);
-            let isValid = true;
-
-            // Check if word contains all required letters
-            for (const [char, freq] of letterFreq) {
-                const wordCharCount = wordFreq.get(char) || 0;
-                if (exact ? wordCharCount !== freq : wordCharCount < freq) {
-                    isValid = false;
-                    break;
+            // Filter candidates
+            for (const word of wordsOfLength) {
+                const wordFreq = this.wordMap.get(word);
+                let isValid = true;
+    
+                // For non-exact matches, check if word contains at least the required letters
+                if (!exact) {
+                    for (const [char, freq] of letterFreq) {
+                        const wordCharCount = wordFreq.get(char) || 0;
+                        if (wordCharCount < freq) {
+                            isValid = false;
+                            break;
+                        }
+                    }
+                } else {
+                    // For exact matches, check exact frequencies
+                    // Check if word has exactly the required letters
+                    for (const [char, freq] of letterFreq) {
+                        if (wordFreq.get(char) !== freq) {
+                            isValid = false;
+                            break;
+                        }
+                    }
+                    // Also check word doesn't have extra letters
+                    for (const [char, count] of wordFreq) {
+                        if ((letterFreq.get(char) || 0) !== count) {
+                            isValid = false;
+                            break;
+                        }
+                    }
+                }
+    
+                if (isValid) {
+                    candidateWords.add(word);
                 }
             }
-
-            if (isValid) {
-                candidateWords.add(word);
-            }
         }
-
+    
         return candidateWords;
     }
 }
