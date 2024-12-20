@@ -42,6 +42,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"svelte-french-toast": "^1.2.0"
+		"svelte-french-toast": "^1.2.0",
+		"svelte-range-slider-pips": "^3.1.4"
 	}
 }

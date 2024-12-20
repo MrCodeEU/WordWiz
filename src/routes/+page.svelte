@@ -2,10 +2,10 @@
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger, Group, Badge } from 'flowbite-svelte';
 	import { DarkMode, Card, Label, Input, Button } from 'flowbite-svelte';
 	import { RadioButton, ButtonGroup } from 'flowbite-svelte';
-	import { FlagOutline, InfoCircleOutline } from 'flowbite-svelte-icons';
+	import { FlagOutline } from 'flowbite-svelte-icons';
 	import { Spinner } from 'flowbite-svelte';
 	import toast, { Toaster } from 'svelte-french-toast';
-	import { blur } from 'svelte/transition';
+	import RangeSlider from 'svelte-range-slider-pips';
 	import { onMount } from 'svelte';
 	import { i18n } from '$lib/i18n';
 	import { page } from '$app/stores';
@@ -24,25 +24,60 @@
 	let loading = $state(false);
 	let initialLoad = $state(false);
 	let selectedLang: AvailableLanguageTag = $state('de');
-	let maxLength = $state(Promise.resolve(0));
+	let maxLength = $state(0);
+	let maxLengths = $state<Map<AvailableLanguageTag, number>>(new Map());
 	let wordLengthsMap = $state<Map<number, string[]>>(new Map());
-	onMount(() => {
-		maxLength = getMaxWordLength();
+	let minMax = $state([1, 20]);
+
+	onMount(async () => {
 		selectedLang = i18n.getLanguageFromUrl($page.url);
+		await initMaxWordLengths();
+		maxLength = maxLengths.get(selectedLang) || 0;
+		minMax[1] = maxLength;
 	});
 
 	$effect(() => {
 		if (i18n.getLanguageFromUrl($page.url)) {
-			maxLength = getMaxWordLength();
+			maxLength = maxLengths.get(selectedLang) || 0;
+			if (minMax[1] > maxLength) {
+				minMax[1] = maxLength;
+			}
 		}
 	});
+
+	async function initMaxWordLengths() {
+		try {
+			const [deResponse, enResponse] = await Promise.all([
+				fetch('/api/findwords/de/maxLength'),
+				fetch('/api/findwords/en/maxLength')
+			]);
+			
+			if (!deResponse.ok || !enResponse.ok) throw new Error('Failed to fetch max word lengths');
+			
+			const [deData, enData] = await Promise.all([
+				deResponse.json(),
+				enResponse.json()
+			]);
+			
+			maxLengths.set('de', deData.maxWordLength);
+			maxLengths.set('en', enData.maxWordLength);
+		} catch (error) {
+			console.error('Error:', error);
+			maxLengths.set('de', 20);
+			maxLengths.set('en', 20);
+		}
+	}
+
+	async function getMaxWordLength() {
+		return maxLengths.get(selectedLang) || 0;
+	}
 
 	async function findWords() {
 		// check if no letters are entered
 		if (letters.length === 0) {
 			toast.error('Please enter some letters', {
 				position: 'top-right',
-				duration: 3000,
+				duration: 3000
 			});
 			return;
 		}
@@ -53,7 +88,7 @@
 		if (!regex.test(letters)) {
 			toast.error('Please enter a comma separated list of letters', {
 				position: 'top-right',
-				duration: 3000,
+				duration: 3000
 			});
 			return;
 		}
@@ -64,29 +99,37 @@
 			const response = await fetch(`/api/findwords/${selectedLang}/${encodedLetters}`);
 			if (!response.ok) throw new Error('Failed to fetch words');
 			const data = await response.json();
-			results = data.words;
+			
+			// Filter words based on minMax range
+			results = data.words.filter(word => 
+				word.length >= minMax[0] && word.length <= minMax[1]
+			);
+
 			if (results.length === 0) {
 				toast.error('No words found', {
-				position: 'top-right',
-				duration: 3000,
-			});
+					position: 'top-right',
+					duration: 3000
+				});
 			}
 		} catch (error) {
 			console.error('Error:', error);
 			results = [];
 			toast.error('Error finding words: ' + error, {
 				position: 'top-right',
-				duration: 3000,
+				duration: 3000
 			});
 		}
+
 		loading = false;
 		initialLoad = true;
+		
 		if (results.length !== 0) {
 			toast.success('Words found', {
 				position: 'top-right',
-				duration: 3000,
+				duration: 3000
 			});
 		}
+
 		// map results wordlength -> words with that length
 		const wordLengths = results.map((word) => word.length);
 		const wordLengthsSet = new Set(wordLengths);
@@ -98,13 +141,12 @@
 		);
 	}
 
-
 	async function unscramble() {
 		// check if no letters are entered
 		if (letters.length === 0) {
 			toast.error('Please enter some letters', {
 				position: 'top-right',
-				duration: 3000,
+				duration: 3000
 			});
 			return;
 		}
@@ -126,16 +168,16 @@
 			results = data.words;
 			if (results.length === 0) {
 				toast.error('No words found', {
-				position: 'top-right',
-				duration: 3000,
-			});
+					position: 'top-right',
+					duration: 3000
+				});
 			}
 		} catch (error) {
 			console.error('Error:', error);
 			results = [];
 			toast.error('Error finding words: ' + error, {
 				position: 'top-right',
-				duration: 3000,
+				duration: 3000
 			});
 		}
 		loading = false;
@@ -143,7 +185,7 @@
 		if (results.length !== 0) {
 			toast.success('Words found', {
 				position: 'top-right',
-				duration: 3000,
+				duration: 3000
 			});
 		}
 		// map results wordlength -> words with that length
@@ -157,18 +199,6 @@
 		);
 	}
 
-	async function getMaxWordLength() {
-		try {
-			const response = await fetch(`/api/findwords/${selectedLang}/maxLength`);
-			if (!response.ok) throw new Error('Failed to fetch max word length');
-			const data = await response.json();
-			return data.maxWordLength;
-		} catch (error) {
-			console.error('Error:', error);
-			return 0;
-		}
-	}
-
 	function addCommas() {
 		// add comma between each letter (if not already there)
 		letters = letters
@@ -176,6 +206,7 @@
 			.filter((l) => l !== ',')
 			.join(',');
 	}
+
 </script>
 
 <Navbar>
@@ -192,9 +223,13 @@
 </Navbar>
 
 <Toaster containerClassName="mt-20 mr-5" />
-<div class="w-1/2 ml-auto mr-auto pt-20">
-	<Tabs divider={false} contentClass="mt-0" defaultClass="flex flex-wrap space-x-0 rtl:space-x-reverse">
-		<TabItem open class="bg-stone-700 rounded-md">
+<div class="ml-auto mr-auto w-1/2 pt-20">
+	<Tabs
+		divider={false}
+		contentClass="mt-0"
+		defaultClass="flex flex-wrap space-x-0 rtl:space-x-reverse"
+	>
+		<TabItem open class="rounded-md bg-stone-700">
 			<span slot="title">Known Letters</span>
 			<Card id="input" size="lg" class="rounded-t-none">
 				<h2 class="m-auto mb-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -210,6 +245,9 @@
 					oninput={addCommas}
 					class="mb-5"
 				/>
+				<div class="w-full">
+					<RangeSlider id="always" all="label" float range pips pipstep={maxLength>25 ? 2: 1} min={1} max={maxLength} bind:values={minMax} />
+				</div>
 				<div class="flex w-full flex-row justify-between">
 					<Button onclick={findWords} class="w-1/3">Find Words</Button>
 					{#await maxLength}
@@ -230,7 +268,7 @@
 				</div>
 			</Card>
 		</TabItem>
-		<TabItem  class="bg-stone-700 rounded-md">
+		<TabItem class="rounded-md bg-stone-700">
 			<span slot="title">Unscramble</span>
 			<Card id="input" size="lg" class="rounded-t-none">
 				<h2 class="m-auto mb-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -255,34 +293,45 @@
 </div>
 
 <div class="width-screen flex flex-col justify-center pt-10">
-    <div class="flex w-screen justify-center">
-        <div class="flex w-3/4 flex-wrap pt-16">
-            {#if loading}
-                <div class="flex w-full justify-center">
-                    <div class="flex h-96 justify-center pt-24">
-                        <Spinner size="20" />
-                    </div>
-                </div>
-            {:else if initialLoad}
-                {#if wordLengthsMap.size > 0}
-                    {#each [...wordLengthsMap] as [length, words]}
-                        <div class="flex w-full flex-col">
-                            <h3 class="pt-5 text-lg font-bold">{length} letter words</h3>
-                            <div class="flex flex-row flex-wrap justify-items-center">
-                                {#each words as word}
-                                    <div class="type-scale4 mx-2 my-1 w-min rounded-md bg-orange-400 px-2 py-1 text-center text-nowrap">
-                                        {word}
-                                    </div>
-                                {/each}
-                            </div>
-                        </div>
-                    {/each}
-                {:else}
-                    <div class="flex w-full justify-center pt-5">
-                        <p class="text-lg">No words found</p>
-                    </div>
-                {/if}
-            {/if}
-        </div>
-    </div>
+	<div class="flex w-screen justify-center">
+		<div class="flex w-3/4 flex-wrap pt-16">
+			{#if loading}
+				<div class="flex w-full justify-center">
+					<div class="flex h-96 justify-center pt-24">
+						<Spinner size="20" />
+					</div>
+				</div>
+			{:else if initialLoad}
+				{#if wordLengthsMap.size > 0}
+					{#each [...wordLengthsMap] as [length, words]}
+						<div class="flex w-full flex-col">
+							<h3 class="pt-5 text-lg font-bold">{length} letter words</h3>
+							<div class="flex flex-row flex-wrap justify-items-center">
+								{#each words as word}
+									<div
+										class="type-scale4 mx-2 my-1 w-min text-nowrap rounded-md bg-orange-400 px-2 py-1 text-center"
+									>
+										{word}
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				{:else}
+					<div class="flex w-full justify-center pt-5">
+						<p class="text-lg">No words found</p>
+					</div>
+				{/if}
+			{/if}
+		</div>
+	</div>
 </div>
+
+
+
+
+<style>
+	:global(#always .rangeFloat) {
+	  opacity: 1;
+	}
+</style>
