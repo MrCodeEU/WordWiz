@@ -101,7 +101,7 @@
 			const data = await response.json();
 			
 			// Filter words based on minMax range
-			results = data.words.filter(word => 
+			results = data.words.filter((word: string) => 
 				word.length >= minMax[0] && word.length <= minMax[1]
 			);
 
