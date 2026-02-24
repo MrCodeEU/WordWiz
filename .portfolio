@@ -1,0 +1,9 @@
+{
+  "description": "A SvelteKit web app that uses trie data structures to efficiently search for words matching pattern and length filters, supporting both English and German word lists.",
+  "featured": false,
+  "tags": ["svelte", "sveltekit", "trie", "word-game", "webapp", "javascript"],
+  "images": [
+    "https://picsum.photos/seed/wordwiz1/800/450",
+    "https://picsum.photos/seed/wordwiz2/800/450"
+  ]
+}
