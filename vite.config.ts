@@ -10,5 +10,10 @@ export default defineConfig({
 			outdir: "./src/lib/paraglide",
 		}),
 		sveltekit()
-	]
+	],
+	// Bundle every dependency into the server build, so the production image
+	// needs no node_modules at all (see Dockerfile).
+	ssr: {
+		noExternal: true
+	}
 });
